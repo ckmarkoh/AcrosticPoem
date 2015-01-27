@@ -1,2 +1,4 @@
 *.pyc
 *.out
+.DS_Store
+bottle.py
