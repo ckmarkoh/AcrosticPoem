@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+<script src="jquery.blockUI.js"></script>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+<title>藏頭詩產生器</title>
+<div id="fb-root"></div>
+<script>(function(d, s, id) {
+  var js, fjs = d.getElementsByTagName(s)[0];
+  if (d.getElementById(id)) return;
+  js = d.createElement(s); js.id = id;
+  js.src = "//connect.facebook.net/zh_TW/sdk.js#xfbml=1&appId=882033105143189&version=v2.0";
+  fjs.parentNode.insertBefore(js, fjs);
+}(document, 'script', 'facebook-jssdk'));
+</script>
+<script>
+function check_chinese(str){
+	if(str.length > 12){
+		alert("請勿輸入超過12個字！");
+	}
+	var re1 = new RegExp("^[\u4E00-\uFA29]*$"); //Chinese character range 
+	var re2 = new RegExp("^[\uE7C7-\uE7F3]*$"); //Chinese character range
+	if (!(re1.test(str) && (! re2.test(str))))
+	{
+		alert("請勿輸入中文字以外的符號或空格！");
+	return false;
+	}
+	return true;
+}
+
+//$(document).ready(function(){
+function form_submit(){
+	if(!check_chinese($('#input_str').val())){
+		return;
+	}
+	var input_data = $('#myform').serializeArray().reduce(function(obj, item) {
+	    obj[item.name] = item.value;
+	    return obj;
+	}, {});
+
+
+	$.blockUI({ css: { 
+		border: 'none', 
+		padding: '15px', 
+		backgroundColor: '#000', 
+		'-webkit-border-radius': '10px', 
+		'-moz-border-radius': '10px', 
+		opacity: .5, 
+		color: '#fff' 
+	} }); 
+	var jqxhr = $.post( "poem.php", input_data, function(result) {
+		//console.log(result);
+		$.unblockUI(); 
+		$("#result").html(result.join("<br/>"));
+	},"json")
+	  .fail(function() {
+		$("#result").html("ERROR!");
+		$.unblockUI(); 
+	  });
+
+}
+//});
+</script>
+</head>
+<body>
+<div style="background:#000000;padding:20px;text-align:center;">
+<h1 style="color:#ffffff;margin:0px;">藏頭詩產生器</h1>
+</div>
+<div style="padding:20px;">
+<div class="row">
+	<div class="col-md-2"></div>
+	<div class="col-md-8" style="padding:0px;">
+		<div class="well">
+		<p>本程式可以自動產生藏頭詩，原理是以Ngram為語言統計模型，先從兩萬首全唐詩中算出Ngram的統計數值，再用Viterbi演算法拼湊出藏頭詩中的每個字，得出藏頭詩，看起來很像詩詞但語意未必通順。</p>
+		<p><a href="https://github.com/ckmarkoh/AcrosticPoem" target="_blank">程式原始碼</a></p>
+		</div>
+	</div>
+	<div class="col-md-2"></div>
+</div>
+<div class="row">
+	<div class="col-md-2 "></div>
+	<div class="col-md-4 ">
+		<div class="form-group" style="max-width:300px;">
+		<form id="myform">
+			<h4>請輸入要藏的句子(限12字以內）</h4>
+			<p>
+				<input class="form-control" id="input_str" name="input_str" type="text" value="藏頭詩產生器">
+			</p>
+			<h4>每句字數：
+			
+				<select name="length">
+				<option value="5" selected="selected">五言</option>
+				<option value="7">七言</option>
+				</select>
+			</h4>
+			<h4>藏字位置：
+				<select name="position">
+				<option value="1" selected="selected">第一個字</option>
+				<option value="2">第二個字</option>
+				<option value="3">第三個字</option>
+				<option value="4">第四個字</option>
+				</select>
+			</h4>
+			<div style="width:100%;">
+				<div style="float:right;"class="btn btn-primary" onClick="form_submit()" >產生藏頭詩 </div>
+			</div>
+		</form>
+		</div>
+	</div>
+	<div class="col-md-4 ">
+		<h4>輸出結果</h4>
+		<div id="result">
+		</div>
+	</div>
+	<div class="col-md-2 "></div>
+</div>
+</div>
+<div class="row" style="background:#dddddd; padding:20px;">
+	<div class="col-md-2 "></div>
+	<div class="col-md-4">
+<div class="fb-like-box" data-href="https://www.facebook.com/pages/LOPEN-%E8%AA%9E%E8%A8%80%E6%9C%AC%E9%AB%94%E8%B3%87%E6%BA%90%E8%88%87%E7%9F%A5%E8%AD%98%E9%96%8B%E6%94%BE%E8%A8%88%E7%95%AB/1606169166271853"  data-width="400px" data-colorscheme="light" data-show-faces="false" data-header="true" data-stream="false" data-show-border="true"></div>
+<!--		<a href="http://lopen.linguistics.ntu.edu.tw/index.html" target="_blank"><img src="http://lopen.linguistics.ntu.edu.tw/assets/icon/lopen_logo.jpg" style="width:70px;"/></a>-->
+</div>
+	<div class="col-md-4" style="padding:0px;">
+			<p>本程式由<a href="http://lopen.linguistics.ntu.edu.tw/index.html" target="_blank">LOPEN Project: 語言,本體資源與知識開放計劃</a>所贊助伺服器</p>
+			<p>LOPE Graduate Institute of Linguistics, National Taiwan University, 2014</p>
+	</div>
+	<div class="col-md-2 "></div>
+</div>
+</body>
+</html>
