@@ -41,6 +41,7 @@ function form_submit(){
 	    obj[item.name] = item.value;
 	    return obj;
 	}, {});
+    //console.log(input_data);
 
 
 	$.blockUI({ css: { 
@@ -58,6 +59,7 @@ function form_submit(){
 		$("#result").html(result.join("<br/>"));
 	},"json")
 	  .fail(function() {
+        //console.log('error');
 		$("#result").html("ERROR!");
 		$.unblockUI(); 
 	  });

@@ -1,4 +1,5 @@
 #-*- coding:utf-8 -*-
+import datetime
 from util import *
 import json
 import random
@@ -8,9 +9,10 @@ import math
 import operator
 import copy
 
+
 class PoemGen(object):
     def __init__(self):
-        self._gram = {} 
+        self._gram2 = {} 
         self._gram1 = [] 
         self._gram1_backup = []
         self._dict = {}
@@ -48,43 +50,18 @@ class PoemGen(object):
             self._dict[key]['yun']= this_yun 
             self._yun[self._dict[key]['yun']] = self._yun.get(self._dict[key]['yun'],[])+[key]
             self._pinje[self._pinje_shun[self._dict[key]['shun']]] += [key]
-
-        gram = json.loads("".join(open_and_read("gram_select.json")))
-        gram1 = []
-        for key in gram['2'].keys():
-            keys = key.split(' ')
-            self._gram[key] = math.log(gram['2'][key])
-        for key in gram['1'].keys():
-            if key in self._dict.keys():
-                gram1.append(( key, gram['1'][key] ))
-        #self._gram1 = gram1
-        self._gram1 = sorted(gram1 ,key=lambda x:x[1],reverse=True)
+        self._gram1 = json.loads("".join(open_and_read("gram1.json")))
+        self._gram2 = json.loads("".join(open_and_read("gram2.json")))
         self._gram1_backup = copy.deepcopy(self._gram1)
 
-    def select_words(self, weight=1): ##TODO check all yun
-        #temp_list = [x[0] for x in self._gram1]
+    def select_words(self, weight=1): 
         result_list = []
         for i in range (self._vword_count):
-            #idx = int(math.pow(random.random(),10) *len(self._gram1)*weight)
-            idx = int(random.random()*len(self._gram1)*weight)
-            if idx > len(self._gram1)-1 :
-                idx = len(self._gram1)-1
-            #print len(self._gram1)
-            #print 'idx1',idx
+            idx = int(random.random()*len(self._gram1))
             temp_item = self._gram1[idx]
-            self._gram1.remove(temp_item) 
-            result_list.append(temp_item)
-        for item in result_list:
-            #idx = int(math.pow(random.random(),10)*len(self._gram1)*weight)
-            idx = int(1-math.pow(random.random(),10)*len(self._gram1)*weight)
-            #print 'idx2',idx
-            if idx > len(self._gram1)-1 :
-                idx = len(self._gram1)-1
-            self._gram1.insert(idx,item) 
-            #self._gram1.append(item) 
-        return [x[0] for x in result_list]
+            result_list.append(temp_item[0])
+        return result_list
 
-        #self._gram1 = [w for w in self._gram1 if w[0] in self._dict.keys() ]
 
              
     def viterbi_sub_2(self, pre_ary,this_ary,default=0.5,offset=0.01,backward=False,ignore_this=False,position=1):
@@ -101,7 +78,7 @@ class PoemGen(object):
                 if ignore_this:
                     this_prob = 1
                 else:
-                    this_prob = self._gram.get( gram_str ,default)
+                    this_prob = self._gram2.get( gram_str ,default)
 
                 temp_prob_val = this_prob * pre_ary[pw]['prob']
                 temp_prob = (pw,temp_prob_val)
@@ -123,7 +100,6 @@ class PoemGen(object):
 
     def viterbi_sub_1(self, word_start,interval,offset=0.01,backward=False):
         pre_ary = {}
-        #word_start=[u'馬',u'英',u'狗']
         pre_ary[word_start[-1]] = {'prob':1.0,'word':word_start[:-1]} 
         #update_bar()
         for i in range(interval): 
@@ -142,7 +118,6 @@ class PoemGen(object):
         #MyPrinter(pre_ary).print_data()
 
     def viterbi(self, word_start_raw,itval_backward=0,offset=0.01):
-
         itval_all = self._length - 1
         itval_forward = itval_all - itval_backward
         word_start = [word_start_raw]
@@ -307,7 +282,6 @@ class PoemGen(object):
 
 def main():
     m = PoemGen()
-
     while True:
         s=raw_input('> ')
         try:
