@@ -41,9 +41,9 @@ if(isset($_POST['input_str'])){
 	if($length !=5 && $length != 7 ){
 		$error .= "Invalid length. ";
 	}
-	if($position > 4 ){
-		$error .= "Invalid position. ";
-	}
+    if( $position != "lr" && $position != "rl"  && $position > $length){
+        $error .= "Invalid position. ";
+    }
 	if($error != ""){
 		echo json_encode(array("error"=>$error));
 	}

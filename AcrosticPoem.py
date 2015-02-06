@@ -196,17 +196,16 @@ class PoemGen(object):
         if not self._itval_slash:
             itval_val =[self._itval_backward for i in range(len(raw_str))]
         else:
-            lenid  = self._length-1
+            lenid  = self._length
             if self._itval_slash == 'lr':
                 itval_val =[i%lenid for i in range(len(raw_str))]
             elif self._itval_slash == 'rl':
                 itval_val =[(lenid-1)-i%lenid for i in range(len(raw_str))]
             else:
                 assert 0
-
         #print itval_val
         for (i,word) in enumerate(raw_str):
-            if i==0 or i%2 !=0:
+            if i%2 !=0 and (self._length -1) != itval_val[i] :
                 word_idx_list.append((len(word_yun),'yun'))
                 itval_dict_yun.update({len(word_yun):itval_val[i]})
                 word_yun.append(word)
@@ -214,7 +213,8 @@ class PoemGen(object):
                 word_idx_list.append((len(word_nonyun),'nonyun'))
                 itval_dict_nonyun.update({len(word_nonyun):itval_val[i]})
                 word_nonyun.append(word)
-        result_yun = self.gen_poem_yun(word_yun,itval_dict_yun) 
+        if len(itval_dict_yun) > 0:
+            result_yun = self.gen_poem_yun(word_yun,itval_dict_yun) 
         result_nonyun = self.gen_poem_nonyun(word_nonyun,itval_dict_nonyun)
         result_list = []
         
@@ -231,7 +231,7 @@ class PoemGen(object):
                     
     def main(self, input_str, print_out=True):
         self._print_out = print_out
-        position_range = [ str(x) for x in range(1,7) ]
+        position_range = [ str(x) for x in range(1,8) ]
         parser = argparse.ArgumentParser( prog='' )
         parser.add_argument('words', help='the hidden words of each sentence.' )
         parser.add_argument('-l','--length', type=int, default=5
@@ -253,7 +253,7 @@ class PoemGen(object):
         #print position_range
         if args.position in position_range :
             self._itval_backward = int(args.position)-1
-            if self._itval_backward >= self._length-1:
+            if self._itval_backward >= self._length:
                 can_run = False
                 print "PoemGen: error: argument -p/--position is too large."
         else:

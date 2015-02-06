@@ -65,7 +65,25 @@ function form_submit(){
 	  });
 
 }
-//});
+
+$(document).ready(function(){
+    $("#pos6").hide();
+    $("#pos7").hide();
+    $( "#len" ).change(function () {
+        var len_val = $("#len").val();
+        if(len_val == 7){
+            $("#pos6").show();
+            $("#pos7").show();
+        }
+        else{
+            if($("#pos").val() > 5 ){
+                $("#pos").val(5);
+            }
+            $("#pos6").hide();
+            $("#pos7").hide();
+        }
+    });
+});
 </script>
 </head>
 <body>
@@ -94,17 +112,22 @@ function form_submit(){
 			</p>
 			<h4>每句字數：
 			
-				<select name="length">
-				<option value="5" selected="selected">五言</option>
-				<option value="7">七言</option>
+				<select id="len" name="length">
+				<option id="len5" value="5" selected="selected">五言</option>
+				<option id="len7" value="7">七言</option>
 				</select>
 			</h4>
 			<h4>藏字位置：
-				<select name="position">
+				<select id="pos" name="position">
 				<option value="1" selected="selected">第一個字</option>
 				<option value="2">第二個字</option>
 				<option value="3">第三個字</option>
 				<option value="4">第四個字</option>
+				<option value="5">第五個字</option>
+				<option id="pos6" value="6">第六個字</option>
+				<option id="pos7" value="7">第七個字</option>
+				<option value="rl">斜向↙</option>
+				<option value="lr">斜向↘</option>
 				</select>
 			</h4>
 			<div style="width:100%;">
