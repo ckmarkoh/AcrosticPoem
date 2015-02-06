@@ -65,38 +65,29 @@ class PoemGen(object):
 
              
     def viterbi_sub_2(self, pre_ary,this_ary,default=0.5,offset=0.01,backward=False,ignore_this=False,position=1):
-        #print this_ary
         for tw in this_ary.keys():
             max_prob = 0
-            max_pw = [pre_ary.keys()[0]] 
+            max_pw = pre_ary.keys()[0]
+            rand_pw = None             
             all_temp_prob =[] 
             for pw in pre_ary.keys():
                 if backward:
                     gram_str = u"%s %s"%(tw,pw)
                 else:
                     gram_str = u"%s %s"%(pw,tw)
-                if ignore_this:
-                    this_prob = 1
-                else:
-                    this_prob = self._gram2.get( gram_str ,default)
-
+                this_prob = self._gram2.get( gram_str ,default)
                 temp_prob_val = this_prob * pre_ary[pw]['prob']
                 temp_prob = (pw,temp_prob_val)
-                if tw not in pre_ary[pw]['word'] :#and tw != pw:
-                    all_temp_prob.append(temp_prob)
-
-            if len(all_temp_prob) ==0:
-                all_temp_prob.append(temp_prob)
-
-            all_temp_prob = sorted(all_temp_prob,key=operator.itemgetter(1),reverse=True)
-            rand_pw = all_temp_prob[int(random.random()*len(all_temp_prob)*offset)]
-            #print rand_pw 
+                if temp_prob_val >= max_prob:
+                    rand_pw = (pw, temp_prob_val)
+                    max_prob = temp_prob_val
+            if rand_pw  == None:
+                rand_pw = (pw, temp_prob_val)
             this_ary[tw]['prob'] = rand_pw[1]
             if backward:
                 this_ary[tw]['word'] = [rand_pw[0]] + pre_ary[rand_pw[0]]['word'] 
             else:
                 this_ary[tw]['word'] = pre_ary[rand_pw[0]]['word'] + [rand_pw[0]]
-        #return this_ary
 
     def viterbi_sub_1(self, word_start,interval,offset=0.01,backward=False):
         pre_ary = {}
