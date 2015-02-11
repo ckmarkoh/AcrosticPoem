@@ -1,13 +1,12 @@
 #-*- coding:utf-8 -*-
-import datetime
 from util import *
 import json
 import random
 import argparse
 import sys 
-import math
 import operator
 import copy
+
 
 
 class PoemGen(object):
@@ -18,9 +17,7 @@ class PoemGen(object):
         self._dict = {}
         self._yun = {}
         self._length = 0
-        self._vword_count = 200
-        self._vocab_type_dict = {'simple':10,'medium':7,'hard':4}
-        self._vocab_type = 10
+        self._vword_count = 400
         self._itval_backward = 0
         self._itval_slash = None
         self._pinje = {0:[],1:[]}
@@ -31,7 +28,6 @@ class PoemGen(object):
     def reset(self):
         self._gram1 = copy.deepcopy(self._gram1_backup)
         self._length = 0
-        self._vocab_type = 10
         self._itval_backward = 0
         self._itval_slash = None
 
@@ -54,7 +50,7 @@ class PoemGen(object):
         self._gram2 = json.loads("".join(open_and_read("gram2.json")))
         self._gram1_backup = copy.deepcopy(self._gram1)
 
-    def select_words(self, weight=1): 
+    def select_words(self): 
         result_list = []
         for i in range (self._vword_count):
             idx = int(random.random()*len(self._gram1))
@@ -64,12 +60,11 @@ class PoemGen(object):
 
 
              
-    def viterbi_sub_2(self, pre_ary,this_ary,default=0.5,offset=0.01,backward=False,ignore_this=False,position=1):
+    def viterbi_sub_2(self, pre_ary,this_ary,default=0.5,backward=False,position=1):
         for tw in this_ary.keys():
             max_prob = 0
-            max_pw = pre_ary.keys()[0]
             rand_pw = None             
-            all_temp_prob =[] 
+            temp_prob_val = 0
             for pw in pre_ary.keys():
                 if backward:
                     gram_str = u"%s %s"%(tw,pw)
@@ -81,49 +76,39 @@ class PoemGen(object):
                 if temp_prob_val >= max_prob:
                     rand_pw = (pw, temp_prob_val)
                     max_prob = temp_prob_val
-            if rand_pw  == None:
-                rand_pw = (pw, temp_prob_val)
             this_ary[tw]['prob'] = rand_pw[1]
             if backward:
                 this_ary[tw]['word'] = [rand_pw[0]] + pre_ary[rand_pw[0]]['word'] 
             else:
                 this_ary[tw]['word'] = pre_ary[rand_pw[0]]['word'] + [rand_pw[0]]
 
-    def viterbi_sub_1(self, word_start,interval,offset=0.01,backward=False):
+    def viterbi_sub_1(self, word_start,interval,backward=False):
         pre_ary = {}
         pre_ary[word_start[-1]] = {'prob':1.0,'word':word_start[:-1]} 
-        #update_bar()
         for i in range(interval): 
-            if i == interval -1 and (not backward):
-                word_list  = self.select_words(10) 
-            else:
-                word_list = self.select_words()
-            ignore_this = False
+            word_list = self.select_words()
             this_ary = {}
             for word in word_list:
                 this_ary.update({word:{'prob':0.0,'word':[]}})
-            self.viterbi_sub_2(pre_ary,this_ary,backward=backward,ignore_this=ignore_this,position=i)
+            self.viterbi_sub_2(pre_ary,this_ary,backward=backward,position=i)
             pre_ary = this_ary
-            #update_bar()
         return pre_ary
-        #MyPrinter(pre_ary).print_data()
 
-    def viterbi(self, word_start_raw,itval_backward=0,offset=0.01):
+    def viterbi(self, word_start_raw,itval_backward=0):
         itval_all = self._length - 1
         itval_forward = itval_all - itval_backward
         word_start = [word_start_raw]
-
         if itval_backward >= 1:
+            max_w = None;
+            max_prob = 0;
             pre_ary_backward = self.viterbi_sub_1(word_start,itval_backward,backward=True)
-            #MyPrinter(pre_ary_backward).print_data()
-            pre_ary_backward = sorted(pre_ary_backward.items(),key=lambda x:x[1]['prob'] ,reverse=True)
-            rand_pw = pre_ary_backward[int(random.random()*len(pre_ary_backward)*offset)]
-            word_start = [rand_pw[0]]+rand_pw[1]['word']
-
+            for w in pre_ary_backward:
+                this_prob = pre_ary_backward[w]['prob'];
+                if this_prob >= max_prob:
+                    max_prob = this_prob;
+                    max_w = w;
+            word_start = [max_w] + pre_ary_backward[max_w]['word'];
         pre_ary_forward = self.viterbi_sub_1(word_start,itval_forward)
-
-        #        print " ".join(pre_ary_forward[key]['word'])
-        #print [rand_pw[0]]+rand_pw[1]['word']
         return pre_ary_forward
 
 
@@ -134,13 +119,9 @@ class PoemGen(object):
         else:
             return True
 
-    #def not_same_yin(self, wa,wb):
-    #    return self._dict[wa]['chuyin'] != self._dict[wb]['chuyin']
 
-    def gen_poem_yun(self, word_yun, itval_dict, offset=0.01):
-
+    def gen_poem_yun(self, word_yun, itval_dict):
         yun_ary = {}
-        
         for y in self._yun.keys():
             yun_ary[y] = [] 
             for i in range(len(word_yun)):
@@ -154,36 +135,38 @@ class PoemGen(object):
                 if pre_ary[w]['prob'] > yun_ary[yun][i]['prob'] and w not in last_word_ary:
                     yun_ary[yun][i]['prob'] = pre_ary[w]['prob'] 
                     yun_ary[yun][i]['word'] = pre_ary[w]['word'] +[w]
-                    
-        yun_key_ary=[]
-        for yun in yun_ary.keys():
-            yun_prob_product =reduce(operator.mul, map(lambda x: float(x['prob']),yun_ary[yun]) )
-            yun_prob_notempty =reduce(operator.and_,map(lambda x : len(x['word']) != 0,yun_ary[yun]) )
-            if yun_prob_notempty :
-                yun_key_ary.append((yun,yun_prob_product))
-        #if yun_key_ary
-        
-        yun_key_ary = sorted(yun_key_ary, key=lambda x:x[1] ,reverse=True)
-        result_yun_key = yun_key_ary[int(random.random()*len(yun_key_ary)*offset)]
-        result_raw = yun_ary[result_yun_key[0]]
-        result_ary = []
+
+        max_yun_product = 0;
+        max_yun = None;
+        for yun in yun_ary:
+            yun_prob_product = 1;
+            for i in range(len(yun_ary[yun])):
+                yun_prob_product *= yun_ary[yun][i]['prob'];
+                if len(yun_ary[yun][i]['word']) == 0:
+                    continue;
+            if yun_prob_product >= max_yun_product:
+                max_yun_product = yun_prob_product;
+                max_yun = yun;
+        result_raw = yun_ary[max_yun];
+        result_ary = {} 
         for (i,rsl) in enumerate(result_raw):
-            result_ary.append( (i,rsl['word']) )
-        return dict(result_ary )
+            result_ary[i] = rsl['word'];
+        return result_ary
         
 
 
-    def gen_poem_nonyun(self, word_nonyun, itval_dict, offset=0.01):
-
-        result_ary = []
+    def gen_poem_nonyun(self, word_nonyun, itval_dict ):
+        result_ary = {} 
         for (i,w_start) in enumerate(word_nonyun):
-            pre_ary = self.viterbi(w_start,itval_backward = itval_dict[i]).items() 
-            pre_ary = sorted(pre_ary,key=lambda x:x[1]['prob'] ,reverse=True)
-            rand_pw = pre_ary[int(random.random()*len(pre_ary)*offset)]
-            result_ary.append( (i, rand_pw[1]['word'] + [rand_pw[0]]) )
-        return dict(result_ary)
-        #MyPrinter(result_dict).print_data()
-        #return result_dict
+            pre_ary = self.viterbi(w_start,itval_backward = itval_dict[i])
+            max_prob = 0;
+            max_pw = None;
+            for w in pre_ary:
+                if pre_ary[w]['prob'] >= max_prob:
+                    max_prob = pre_ary[w]['prob'];
+                    max_pw = w;
+            result_ary[i] = pre_ary[max_pw]['word'] + [max_pw] ;
+        return result_ary
          
 
     def gen_poem(self, raw_str,slash=False):
@@ -203,7 +186,6 @@ class PoemGen(object):
                 itval_val =[(lenid-1)-i%lenid for i in range(len(raw_str))]
             else:
                 assert 0
-        #print itval_val
         for (i,word) in enumerate(raw_str):
             if i%2 !=0 and (self._length -1) != itval_val[i] :
                 word_idx_list.append((len(word_yun),'yun'))
@@ -223,10 +205,6 @@ class PoemGen(object):
                 result_list.append( result_yun[idx] )
             elif typ == 'nonyun':
                 result_list.append( result_nonyun[idx] )
-
-        #MyPrinter(result_list).print_data()
-        #for s in result_list:
-        #    print "".join(s)
         return result_list
                     
     def main(self, input_str, print_out=True):
@@ -237,8 +215,6 @@ class PoemGen(object):
         parser.add_argument('-l','--length', type=int, default=5
                             ,choices=[5,7] , help='number of words per sentence. (default: %(default)s)')
         parser.add_argument('-s','--seed', type=int , default=random.randint(0, sys.maxint) ,help='seed of random. ')
-        parser.add_argument('-v','--vocab',  default ='simple'
-                            ,choices=self._vocab_type_dict.keys(), help='type of vocabulary. ')
         parser.add_argument('-p','--position', default = '1'
                             ,choices=position_range+['lr','rl'], help='position of target words. ')
 
@@ -248,9 +224,6 @@ class PoemGen(object):
         
 
         self._length = args.length
-        self._vocab_type = self._vocab_type_dict[args.vocab]
-        #print args.position
-        #print position_range
         if args.position in position_range :
             self._itval_backward = int(args.position)-1
             if self._itval_backward >= self._length:
