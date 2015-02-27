@@ -12,8 +12,7 @@ import copy
 class PoemGen(object):
     def __init__(self):
         self._gram2 = {} 
-        self._gram1 = [] 
-        self._gram1_backup = []
+        self._gram1 = {}
         self._dict = {}
         self._yun = {}
         self._length = 0
@@ -26,7 +25,6 @@ class PoemGen(object):
         self.load_dict_gram()
 
     def reset(self):
-        self._gram1 = copy.deepcopy(self._gram1_backup)
         self._length = 0
         self._itval_backward = 0
         self._itval_slash = None
@@ -48,19 +46,19 @@ class PoemGen(object):
             self._pinje[self._pinje_shun[self._dict[key]['shun']]] += [key]
         self._gram1 = json.loads("".join(open_and_read("gram1.json")))
         self._gram2 = json.loads("".join(open_and_read("gram2.json")))
-        self._gram1_backup = copy.deepcopy(self._gram1)
 
     def select_words(self): 
         result_list = []
+        gram1_key = self._gram1.keys()
         for i in range (self._vword_count):
-            idx = int(random.random()*len(self._gram1))
-            temp_item = self._gram1[idx]
-            result_list.append(temp_item[0])
+            idx = int(random.random()*len(gram1_key))
+            temp_item = gram1_key[idx]
+            result_list.append(temp_item)
         return result_list
 
 
              
-    def viterbi_sub_2(self, pre_ary,this_ary,default=0.5,backward=False,position=1):
+    def viterbi_sub_2(self, pre_ary,this_ary,default=0.1,backward=False,position=1):
         for tw in this_ary.keys():
             max_prob = 0
             rand_pw = None             
@@ -70,7 +68,7 @@ class PoemGen(object):
                     gram_str = u"%s %s"%(tw,pw)
                 else:
                     gram_str = u"%s %s"%(pw,tw)
-                this_prob = self._gram2.get( gram_str ,default)
+                this_prob = self._gram2.get( gram_str ,default) / ( 1.0*self._gram1.get( pw, default*10) )
                 temp_prob_val = this_prob * pre_ary[pw]['prob']
                 temp_prob = (pw,temp_prob_val)
                 if temp_prob_val >= max_prob:
@@ -253,14 +251,8 @@ def main():
         except SystemExit:
             pass
 
-def show_gram1():
-    m = PoemGen()
-    for key in m._gram1:
-        print key[0].encode('utf-8'),key[1]
-    #MyPrinter(m._gram1).print_data()
 
 if __name__ == "__main__":
-    #show_gram1()
     main()
         #print("do something else")
 
