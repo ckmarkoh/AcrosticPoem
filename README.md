@@ -75,14 +75,11 @@
 禹廟器道今何紛
 ```
 
-##後續工作：
+## 相關研究
 
-本程式所使用的演算法極為簡單，但產生出的藏頭詩語意不通順，
-若要產生語意通順的藏頭詩，可參考以下兩篇研究論文，用統計式機器翻譯的演算法。但此演算法較為複雜，目前小弟還在研究當中。
+1.由[fumin](https://github.com/fumin/)所做的[Neural Turing Machines](https://github.com/fumin/ntm)可產生較符合語意的藏頭詩。
 
+2.若要產生有對偶句的藏頭詩，可參考以下兩篇研究論文，用統計式機器翻譯的演算法。
 Ming Zhou, Long Jiang, Jing He: Generating Chinese Couplets and Quatrain Using a Statistical Approach. PACLIC 2009: 43-52
+Long Jiang, Ming Zhou: Generating Chinese Couplets using a Statistical MT Approach. COLING 20
 
-Long Jiang, Ming Zhou: Generating Chinese Couplets using a Statistical MT Approach. COLING 2008: 377-384
-
-
-另外，為了讓一般人也可以使用，藏頭詩產生器目前還需要做成網頁版的。
