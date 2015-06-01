@@ -80,6 +80,8 @@
 1.由[fumin](https://github.com/fumin/)所做的[Neural Turing Machines](https://github.com/fumin/ntm)可產生較符合語意的藏頭詩。
 
 2.若要產生有對偶句的藏頭詩，可參考以下兩篇研究論文，用統計式機器翻譯的演算法。
+
 Ming Zhou, Long Jiang, Jing He: Generating Chinese Couplets and Quatrain Using a Statistical Approach. PACLIC 2009: 43-52
+
 Long Jiang, Ming Zhou: Generating Chinese Couplets using a Statistical MT Approach. COLING 20
 
