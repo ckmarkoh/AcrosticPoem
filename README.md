@@ -77,7 +77,10 @@
 
 ## 相關研究
 
+
 1.由[fumin](https://github.com/fumin/)所做的[Neural Turing Machines](https://github.com/fumin/ntm)可產生較符合語意的藏頭詩。
+
+2.由[XingxingZhang](https://github.com/XingxingZhang)所做的[rnnpg](https://github.com/XingxingZhang/rnnpg/blob/master/README.md)也是用RNN，但做出來的效果比fumin的更好。
 
 2.若要產生有對偶句的藏頭詩，可參考以下兩篇研究論文，用統計式機器翻譯的演算法。
 
